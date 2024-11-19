@@ -116,7 +116,7 @@ pub fn run_winit() {
         PhysicalProperties {
             size: (0, 0).into(),
             subpixel: Subpixel::Unknown,
-            make: "Smithay".into(),
+            make: "Aurora".into(),
             model: "Winit".into(),
         },
     );
