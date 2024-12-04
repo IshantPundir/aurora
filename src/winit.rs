@@ -40,6 +40,7 @@ use smithay::{
         presentation::Refresh,
     },
 };
+
 use tracing::{error, info, warn};
 
 use crate::state::{take_presentation_feedback, AuroraState, Backend};
@@ -87,10 +88,12 @@ impl Backend for WinitData {
 }
 
 pub fn run_winit() {
-    let mut event_loop = EventLoop::try_new().unwrap();
-    let display = Display::new().unwrap();
-    let mut display_handle = display.handle();
+    // Initialization
+    let mut event_loop = EventLoop::try_new().unwrap(); // manages system events like input, resize & app-specific events.
+    let display = Display::new().unwrap(); // Wayland protocol Display, managing Wayland client & protocol interactions.
+    let mut display_handle = display.handle(); // handle to interact with the Wayland display.
 
+    // Backend initialization
     #[cfg_attr(not(feature = "egl"), allow(unused_mut))]
     let (mut backend, mut winit) = match winit::init::<GlesRenderer>() {
         Ok(ret) => ret,
@@ -99,12 +102,14 @@ pub fn run_winit() {
             return;
         }
     };
-    let size = backend.window_size();
 
+    // Output setup
+    let size = backend.window_size();
     let mode = Mode {
         size,
         refresh: 60_000,
     };
+    // output represents a Wayland output (eg: a monitor)
     let output = Output::new(
         OUTPUT_NAME.to_string(),
         PhysicalProperties {
@@ -114,6 +119,8 @@ pub fn run_winit() {
             model: "Winit".into(),
         },
     );
+
+    // Output configuration
     let _global = output.create_global::<AuroraState<WinitData>>(&display.handle());
     output.change_current_state(Some(mode), Some(Transform::Flipped180), None, Some((0, 0).into()));
     output.set_preferred(mode);
@@ -121,6 +128,8 @@ pub fn run_winit() {
     let render_node = EGLDevice::device_for_display(backend.renderer().egl_context().display())
         .and_then(|device| device.try_get_render_node());
 
+    // DMA-BUF Support
+    // for sharing bufferrs (eg. textures) between components (eg. GPU & compositor)
     let dmabuf_default_feedback = match render_node {
         Ok(Some(node)) => {
             let dmabuf_formats = backend.renderer().dmabuf_formats();
@@ -161,7 +170,9 @@ pub fn run_winit() {
         info!("EGL hardware-acceleration enabled");
     };
 
+    // State and Data initialization
     let data = {
+        // It tracks which part of the output need redrawing
         let damage_tracker = OutputDamageTracker::from_output(&output);
 
         WinitData {
@@ -171,7 +182,11 @@ pub fn run_winit() {
             full_redraw: 0,
         }
     };
+
+    // Aurora state object managin compositor-specific data.(eg.surfaces, inputs).
     let mut state = AuroraState::init(display, event_loop.handle(), data, true);
+    
+
     state
         .shm_state
         .update_formats(state.backend_data.backend.renderer().shm_formats());
@@ -182,7 +197,11 @@ pub fn run_winit() {
     let mut pointer_element = PointerElement::default();
 
     while state.running.load(Ordering::SeqCst) {
+        // Event handling
+
+        // input and resizing
         let status = winit.dispatch_new_events(|event| match event {
+            // Updates output mode & repositions content when the window is resized
             WinitEvent::Resized { size, .. } => {
                 // We only have one output
                 let output = state.space.outputs().next().unwrap().clone();
@@ -195,6 +214,7 @@ pub fn run_winit() {
                 output.set_preferred(mode);
                 crate::shell::fixup_positions(&mut state.space, state.pointer.current_location());
             }
+            // Processes user inputs (eg. tourch, mouse and keyboard).
             WinitEvent::Input(event) => state.process_input_event_windowed(event, OUTPUT_NAME),
             _ => (),
         });
@@ -231,11 +251,12 @@ pub fn run_winit() {
 
             let full_redraw = &mut state.backend_data.full_redraw;
             *full_redraw = full_redraw.saturating_sub(1);
+            
             let space = &mut state.space;
             let damage_tracker = &mut state.backend_data.damage_tracker;
             let show_window_preview = state.show_window_preview;
 
-            let dnd_icon = state.dnd_icon.as_ref();
+            // let dnd_icon = state.dnd_icon.as_ref();
 
             let scale = Scale::from(output.current_scale().fractional_scale());
             let cursor_hotspot = if let CursorImageStatus::Surface(ref surface) = state.cursor_status {
@@ -253,7 +274,12 @@ pub fn run_winit() {
             };
             let cursor_pos = state.pointer.current_location();
 
+            // Binds the rendering backend to start a new frame. This prepares the rendering 
+            // target, such as framebuffer or output surface.
             let render_res = backend.bind().and_then(|_| {
+                // Determine whether a full redraw is needed or if partial updates (damage tracking) are sufficiant.
+
+                // If full redraw is requested, age is set to 0. This ensures the compositor redraw everything.
                 let age = if *full_redraw > 0 {
                     0
                 } else {
@@ -261,8 +287,9 @@ pub fn run_winit() {
                 };
 
                 let renderer = backend.renderer();
-
-                let mut elements = Vec::<CustomRenderElements<GlesRenderer>>::new();
+                
+                // Creating a list of render elements.
+                let mut elements: Vec<CustomRenderElements<GlesRenderer>> = Vec::<CustomRenderElements<GlesRenderer>>::new();
 
                 elements.extend(
                     pointer_element.render_elements(
@@ -275,22 +302,23 @@ pub fn run_winit() {
                     ),
                 );
 
-                // draw the dnd icon if any
-                if let Some(icon) = dnd_icon {
-                    let dnd_icon_pos = (cursor_pos + icon.offset.to_f64())
-                        .to_physical(scale)
-                        .to_i32_round();
-                    if icon.surface.alive() {
-                        elements.extend(AsRenderElements::<GlesRenderer>::render_elements(
-                            &smithay::desktop::space::SurfaceTree::from_surface(&icon.surface),
-                            renderer,
-                            dnd_icon_pos,
-                            scale,
-                            1.0,
-                        ));
-                    }
-                }
+                // // draw the dnd icon if any
+                // if let Some(icon) = dnd_icon {
+                //     let dnd_icon_pos = (cursor_pos + icon.offset.to_f64())
+                //         .to_physical(scale)
+                //         .to_i32_round();
+                //     if icon.surface.alive() {
+                //         elements.extend(AsRenderElements::<GlesRenderer>::render_elements(
+                //             &smithay::desktop::space::SurfaceTree::from_surface(&icon.surface),
+                //             renderer,
+                //             dnd_icon_pos,
+                //             scale,
+                //             1.0,
+                //         ));
+                //     }
+                // }
 
+                // Renders the output, including surfaces, cursors, and other elements.
                 render_output(
                     &output,
                     space,
@@ -345,6 +373,7 @@ pub fn run_winit() {
             }
         }
 
+        // Cleanup and Client updates.
         let result = event_loop.dispatch(Some(Duration::from_millis(1)), &mut state);
         if result.is_err() {
             state.running.store(false, Ordering::SeqCst);

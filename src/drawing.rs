@@ -3,18 +3,15 @@
 use smithay::{
     backend::renderer::{
         element::{
-            memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement},
-            surface::WaylandSurfaceRenderElement,
-            AsRenderElements, Kind,
-        },
-        ImportAll, ImportMem, Renderer, Texture,
+            memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement}, surface::WaylandSurfaceRenderElement, AsRenderElements, Kind
+        }, ImportAll, ImportMem, Renderer, Texture
     },
     input::pointer::CursorImageStatus,
     render_elements,
     utils::{Physical, Point, Scale},
 };
 
-pub static CLEAR_COLOR: [f32; 4] = [0.8, 0.8, 0.9, 1.0];
+pub static CLEAR_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub static CLEAR_COLOR_FULLSCREEN: [f32; 4] = [0.0, 0.0, 0.0, 0.0];
 
 pub struct PointerElement {
