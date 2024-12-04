@@ -11,10 +11,7 @@ use smithay::{
         allocator::dmabuf::Dmabuf,
         egl::EGLDevice,
         renderer::{
-            damage::{Error as OutputDamageTrackerError, OutputDamageTracker},
-            element::AsRenderElements,
-            gles::GlesRenderer,
-            ImportDma, ImportMemWl,
+            damage::{Error as OutputDamageTrackerError, OutputDamageTracker}, element::AsRenderElements, gles::GlesRenderer, ImportDma, ImportMem, ImportMemWl
         },
         winit::{self, WinitEvent, WinitGraphicsBackend},
         SwapBuffersError,
@@ -41,7 +38,11 @@ use smithay::{
     },
 };
 
+use smithay::backend::allocator::Fourcc;
+
 use tracing::{error, info, warn};
+
+use rand::Rng;
 
 use crate::state::{take_presentation_feedback, AuroraState, Backend};
 use crate::{drawing::*, render::*};
@@ -124,6 +125,22 @@ pub fn run_winit() {
     let _global = output.create_global::<AuroraState<WinitData>>(&display.handle());
     output.change_current_state(Some(mode), Some(Transform::Flipped180), None, Some((0, 0).into()));
     output.set_preferred(mode);
+
+    // Initialize FPS Counter
+    let fps_image =
+        image::ImageReader::with_format(std::io::Cursor::new(FPS_NUMBERS_PNG), image::ImageFormat::Png)
+            .decode()
+            .unwrap();
+
+    let fps_texture = backend
+        .renderer()
+        .import_memory(
+            &fps_image.to_rgba8(),
+            Fourcc::Abgr8888, (fps_image.width() as i32, fps_image.height() as i32).into(),
+            false,
+        ).expect("Unable to load FPS texture");
+
+    let mut fps_element = FpsElement::new(fps_texture);
 
     let render_node = EGLDevice::device_for_display(backend.renderer().egl_context().display())
         .and_then(|device| device.try_get_render_node());
@@ -257,6 +274,8 @@ pub fn run_winit() {
             let show_window_preview = state.show_window_preview;
 
             // let dnd_icon = state.dnd_icon.as_ref();
+            let fps = rand::thread_rng().gen_range(0..100);
+            fps_element.update_fps(fps);
 
             let scale = Scale::from(output.current_scale().fractional_scale());
             let cursor_hotspot = if let CursorImageStatus::Surface(ref surface) = state.cursor_status {
@@ -301,6 +320,9 @@ pub fn run_winit() {
                         1.0,
                     ),
                 );
+                elements.push(CustomRenderElements::Fps(fps_element.clone()));
+
+                // elements.push(CustomRenderElements::Fps(fps_element.clone()));
 
                 // // draw the dnd icon if any
                 // if let Some(icon) = dnd_icon {

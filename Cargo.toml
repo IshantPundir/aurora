@@ -26,7 +26,7 @@ rev = "bc1d7320f95cdf17f9e7aa6867cccc5903548032"
 
 
 [features]
-default = ["egl", "winit", "udev"]
+default = ["egl", "winit", "udev", "image/png"]
 egl = ["smithay/use_system_lib", "smithay/backend_egl"]
 udev = [
   "smithay-drm-extras",
