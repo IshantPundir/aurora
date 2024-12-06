@@ -14,7 +14,7 @@ pub mod input_handler;
 pub mod render;
 pub mod shell;
 pub mod state;
-pub mod workspace;
+pub mod app_manager;
 #[cfg(feature = "udev")]
 pub mod udev;
 #[cfg(feature = "winit")]

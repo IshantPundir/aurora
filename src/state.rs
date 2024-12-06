@@ -96,8 +96,7 @@ use smithay::{
 };
 
 use crate::{
-    focus::{KeyboardFocusTarget, PointerFocusTarget},
-    shell::WindowElement, workspace::Workspaces,
+    app_manager::AppManger, focus::{KeyboardFocusTarget, PointerFocusTarget}, shell::WindowElement
 };
 
 
@@ -159,7 +158,8 @@ pub struct AuroraState<BackendData: Backend + 'static> {
     pub show_window_preview: bool,
 
     // Workspace
-    pub workspaces: Workspaces,
+    // pub workspaces: Workspaces,
+    pub app_manager: AppManger,
 }
 
 #[derive(Debug)]
@@ -643,7 +643,8 @@ impl<BackendData: Backend + 'static> AuroraState<BackendData> {
             pointer,
             clock,
             show_window_preview: false,
-            workspaces: Workspaces::new()
+            app_manager: AppManger::new()
+            // workspaces: Workspaces::new()
         }
     }
 }

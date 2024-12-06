@@ -44,14 +44,14 @@ impl<BackendData: Backend> XdgShellHandler for AuroraState<BackendData> {
     fn new_toplevel(&mut self, surface: ToplevelSurface) {
         let window = WindowElement(Window::new_wayland_window(surface.clone()));
 
-        self.workspaces.insert_window(self.workspaces.active(), window.clone());
+        self.app_manager.insert_window(window.clone());
         self.space.map_element(window, (0, 0), false);
 
-        self.workspaces.refresh_geometry(&mut self.space);
+        self.app_manager.refresh_geometry(&mut self.space);
     }
 
     fn toplevel_destroyed(&mut self, _surface: ToplevelSurface) {
-        self.workspaces.refresh_geometry(&mut self.space);
+        self.app_manager.refresh_geometry(&mut self.space);
     }
 
     fn new_popup(&mut self, surface: PopupSurface, _positioner: PositionerState) {
