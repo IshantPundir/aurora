@@ -1,0 +1,46 @@
+[package]
+name = "aurora"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitflags = "2.2.1"
+fps_ticker = {version = "1.0.0", optional = true}
+image = {version = "0.25.1", default-features = false, optional = true}
+rand = "0.8"
+tracing = { version = "0.1.37", features = ["max_level_trace", "release_max_level_debug"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+thiserror = "1"
+xcursor = {version = "0.3.3", optional = true}
+xkbcommon = "0.8.0"
+renderdoc = {version = "0.11.0", optional = true}
+puffin_http = { version = "0.13", optional = true }
+smithay-drm-extras = {path = "smithay-drm-extras", optional = true}
+
+[dependencies.smithay]
+default-features = false
+features = ["desktop", "wayland_frontend"]
+git = "https://github.com/Smithay/smithay.git"
+rev = "bc1d7320f95cdf17f9e7aa6867cccc5903548032"
+
+
+[features]
+default = ["egl", "winit", "udev", "image/png"]
+egl = ["smithay/use_system_lib", "smithay/backend_egl"]
+udev = [
+  "smithay-drm-extras",
+  "smithay/backend_libinput",
+  "smithay/backend_udev",
+  "smithay/backend_drm",
+  "smithay/backend_gbm",
+  "smithay/backend_vulkan",
+  "smithay/backend_egl",
+  "smithay/backend_session_libseat",
+  "image",
+  "smithay/renderer_gl",
+  "smithay/renderer_pixman",
+  "smithay/renderer_multi",
+  "xcursor",
+]
+winit = ["smithay/backend_winit", "smithay/backend_drm"]
+renderer_sync = []
