@@ -193,7 +193,7 @@ pub fn run_winit() {
                 };
                 output.change_current_state(Some(mode), None, None, None);
                 output.set_preferred(mode);
-                crate::shell::fixup_positions(&mut state.space, state.pointer.current_location());
+                crate::shell::fixup_positions(&mut state.space, &mut state.window_manager, state.pointer.current_location());
             }
             _ => (),
         });

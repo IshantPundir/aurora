@@ -36,6 +36,7 @@ use smithay::{
 };
 
 
+use crate::window_manager::WindowManager;
 use crate::ClientState;
 use crate::{state::Backend, AuroraState};
 
@@ -401,7 +402,7 @@ fn place_new_window(
     space.map_element(window.clone(), (x, y), activate);
 }
 
-pub fn fixup_positions(space: &mut Space<WindowElement>, pointer_location: Point<f64, Logical>) {
+pub fn fixup_positions(space: &mut Space<WindowElement>, window_manager: &mut WindowManager, pointer_location: Point<f64, Logical>) {
     // fixup outputs
     let mut offset = Point::<i32, Logical>::from((0, 0));
     for output in space.outputs().cloned().collect::<Vec<_>>().into_iter() {
@@ -439,4 +440,8 @@ pub fn fixup_positions(space: &mut Space<WindowElement>, pointer_location: Point
     for window in orphaned_windows.into_iter() {
         place_new_window(space, pointer_location, &window, false);
     }
+
+    // Fixup apps???
+    window_manager.refresh_geometry(space);
+    
 }
