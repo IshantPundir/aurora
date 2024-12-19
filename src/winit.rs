@@ -7,7 +7,7 @@ use smithay::{
         renderer::{
             damage::{Error as OutputDamageTrackerError, OutputDamageTracker}, gles::GlesRenderer, ImportDma, ImportEgl, ImportMemWl
         },
-        winit::{self, WinitGraphicsBackend},
+        winit::{self, WinitEvent, WinitGraphicsBackend},
         SwapBuffersError,
     }, delegate_dmabuf, input::keyboard::LedState,
         output::{Mode, Output, PhysicalProperties, Subpixel}, reexports::{
@@ -182,6 +182,19 @@ pub fn run_winit() {
 
         // input and resizing
         let status = winit.dispatch_new_events(|event| match event {
+            // Updates output mode & repositions content when window is resized
+            WinitEvent::Resized  { size, .. }  => {
+                let output = state.space.outputs().next().unwrap().clone();
+                state.space.map_output(&output, (0, 0));
+
+                let mode = Mode {
+                    size,
+                    refresh: 60_000,
+                };
+                output.change_current_state(Some(mode), None, None, None);
+                output.set_preferred(mode);
+                crate::shell::fixup_positions(&mut state.space, state.pointer.current_location());
+            }
             _ => (),
         });
 

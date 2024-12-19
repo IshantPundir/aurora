@@ -1,12 +1,9 @@
 use smithay::{
 
-    input::Seat,
-    reexports::{
+    desktop::Window, input::Seat, reexports::{
         wayland_protocols::xdg::shell::server::xdg_toplevel,
         wayland_server:: protocol::{wl_output, wl_seat, wl_surface::WlSurface},
-    },
-    utils::Serial,
-    wayland::shell::xdg::{Configure, PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState}
+    }, utils::Serial, wayland::shell::xdg::{Configure, PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState}
 };
 
 use crate::{
@@ -14,6 +11,8 @@ use crate::{
     // shell::TouchMoveSurfaceGrab,
     state::{AuroraState, Backend},
 };
+
+use super::WindowElement;
 
 /* 
 Implements the **XDG Shell protocol** for the Wayland compositor. 
@@ -37,10 +36,16 @@ impl<BackendData: Backend> XdgShellHandler for AuroraState<BackendData> {
         &mut self.xdg_shell_state
     }
 
-    fn new_toplevel(&mut self, _surface: ToplevelSurface) {
+    fn new_toplevel(&mut self, surface: ToplevelSurface) {
+        let window = WindowElement(Window::new_wayland_window(surface.clone()));
+        self.window_manager.insert_window(window.clone());
+        self.space.map_element(window, (0, 0), false);
+
+        self.window_manager.refresh_geometry(&mut self.space);
     }
 
     fn toplevel_destroyed(&mut self, _surface: ToplevelSurface) {
+        self.window_manager.refresh_geometry(&mut self.space);
     }
 
     fn new_popup(&mut self, _surface: PopupSurface, _positioner: PositionerState) {

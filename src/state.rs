@@ -85,7 +85,7 @@ use smithay::{
 };
 
 
-use crate::{focus::{KeyboardFocusTarget, PointerFocusTarget}, shell::WindowElement};
+use crate::{focus::{KeyboardFocusTarget, PointerFocusTarget}, shell::WindowElement, window_manager::WindowManager};
 
 #[derive(Debug, Default)]
 pub struct ClientState {
@@ -150,6 +150,9 @@ pub struct AuroraState<BackendData: Backend + 'static> {
     pub seat: Seat<AuroraState<BackendData>>,
     pub seat_name: String,
     pub pointer: PointerHandle<AuroraState<BackendData>>,
+
+    // apps...
+    pub window_manager: WindowManager,
 }
 /*
 Delegates the Wayland compositor role to the AuroraState.
@@ -810,7 +813,9 @@ impl <BackendData: Backend + 'static> AuroraState<BackendData> {
 
             seat,
             seat_name,
-            pointer
+            pointer,
+
+            window_manager: WindowManager::new()
         }
     }
 
