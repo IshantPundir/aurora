@@ -43,6 +43,10 @@ impl WindowManager {
                     });
 
                     toplevel.send_pending_configure();
+
+                    if toplevel.is_initial_configure_sent() {
+                        toplevel.send_configure();
+                    };
                 }
 
                 space.map_element(window.clone(), (0, 0), true);
