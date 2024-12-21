@@ -1,4 +1,4 @@
-use smithay::{desktop::Space, utils::IsAlive};
+use smithay::{desktop::Space, reexports::wayland_protocols::xdg::shell::server::xdg_toplevel, utils::IsAlive};
 
 use crate::shell::WindowElement;
 
@@ -39,6 +39,7 @@ impl WindowManager {
                 if let Some(toplevel) = window.0.toplevel() {
                     toplevel.with_pending_state(|state| {
                         state.size = Some((output_geometry.size.w, output_geometry.size.h).into());
+                        state.states.set(xdg_toplevel::State::Fullscreen);
                     });
 
                     toplevel.send_pending_configure();
@@ -48,6 +49,6 @@ impl WindowManager {
             } else {
                 space.unmap_elem(window);
             }
-        }
+         }
     }
 }
