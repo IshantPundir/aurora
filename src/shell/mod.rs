@@ -426,6 +426,7 @@ pub fn fixup_positions(space: &mut Space<WindowElement>, window_manager: &mut Wi
             Some(Rectangle::from_loc_and_size(geo.loc + zone.loc, zone.size))
         })
         .collect::<Vec<_>>();
+
     for window in space.elements() {
         let window_location = match space.element_location(window) {
             Some(loc) => loc,
@@ -437,6 +438,7 @@ pub fn fixup_positions(space: &mut Space<WindowElement>, window_manager: &mut Wi
             orphaned_windows.push(window.clone());
         }
     }
+    
     for window in orphaned_windows.into_iter() {
         place_new_window(space, pointer_location, &window, false);
     }

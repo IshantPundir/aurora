@@ -6,11 +6,7 @@ use smithay::{
     }, utils::Serial, wayland::shell::xdg::{Configure, PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState}
 };
 
-use crate::{
-    // focus::KeyboardFocusTarget,
-    // shell::TouchMoveSurfaceGrab,
-    state::{AuroraState, Backend},
-};
+use crate::state::{AuroraState, Backend};
 
 use super::WindowElement;
 
@@ -73,9 +69,7 @@ impl<BackendData: Backend> XdgShellHandler for AuroraState<BackendData> {
 
     fn unmaximize_request(&mut self, _surface: ToplevelSurface) {}
 
-    fn grab(&mut self, _surface: PopupSurface, _seat: wl_seat::WlSeat, _serial: Serial) {
-
-    }
+    fn grab(&mut self, _surface: PopupSurface, _seat: wl_seat::WlSeat, _serial: Serial) { }
 }
 
 impl<BackendData: Backend> AuroraState<BackendData> {

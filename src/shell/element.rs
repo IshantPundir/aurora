@@ -244,8 +244,6 @@ impl WindowElement {
     }
 }
 
-
-
 impl<R: Renderer> std::fmt::Debug for WindowRenderElement<R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

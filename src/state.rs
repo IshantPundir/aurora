@@ -215,7 +215,7 @@ impl <BackendData: Backend> SeatHandler for AuroraState<BackendData> {
         &mut self.seat_state
     }
 
-    fn focus_changed(&mut self, seat: &smithay::input::Seat<Self>, target: Option<&Self::KeyboardFocus>) {
+    fn focus_changed(&mut self, seat: &Seat<Self>, target: Option<&KeyboardFocusTarget>) {
         let dh = &self.display_handle;
         let wl_surface = target.and_then(WaylandFocus::wl_surface);
         let focus = wl_surface.and_then(|s| dh.get_client(s.id()).ok());

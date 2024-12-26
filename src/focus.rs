@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use smithay::{backend::input::KeyState, desktop::{LayerSurface, PopupKind, Window, WindowSurface}, input::{keyboard::{KeyboardTarget, KeysymHandle, ModifiersState}, pointer::{AxisFrame, ButtonEvent, GestureHoldBeginEvent, GestureHoldEndEvent, GesturePinchBeginEvent, GesturePinchEndEvent, GesturePinchUpdateEvent, GestureSwipeBeginEvent, GestureSwipeEndEvent, GestureSwipeUpdateEvent, MotionEvent, PointerTarget, RelativeMotionEvent}, touch::TouchTarget, Seat}, reexports::wayland_server::{backend::ObjectId, protocol::wl_surface::WlSurface}, utils::{IsAlive, Serial}, wayland::seat::WaylandFocus};
 
-use crate::{state::Backend, AuroraState};
+use crate::{shell::WindowElement, state::Backend, AuroraState};
 
 // ------------------- Keyboard focus ------------------- //
 #[derive(Debug, Clone, PartialEq)]
@@ -20,6 +20,13 @@ impl IsAlive for KeyboardFocusTarget {
             KeyboardFocusTarget::LayerSurface(l) => l.alive(),
             KeyboardFocusTarget::Popup(p) => p.alive(),
         }
+    }
+}
+
+impl From<WindowElement> for KeyboardFocusTarget {
+    #[inline]
+    fn from(w: WindowElement) -> Self {
+        KeyboardFocusTarget::Window(w.0.clone())
     }
 }
 

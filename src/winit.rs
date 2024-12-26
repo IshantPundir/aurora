@@ -26,6 +26,8 @@ use smithay::{
 
 use crate::{renderer::{render_output, CustomRenderElements}, state::{take_presentation_feedback, AuroraState, Backend}};
 
+pub const OUTPUT_NAME: &str = "winit";
+
 pub struct WinitData {
     backend: WinitGraphicsBackend<GlesRenderer>,
     damage_tracker: OutputDamageTracker,
@@ -93,7 +95,7 @@ pub fn run_winit() {
     };
     // output represents a Wayland output (eg: a monitor)
     let output = Output::new(
-        "OUTPUT_NAME".to_string(),
+        OUTPUT_NAME.to_string(),
         PhysicalProperties {
             size: (0, 0).into(),
             subpixel: Subpixel::Unknown,
@@ -195,6 +197,9 @@ pub fn run_winit() {
                 output.set_preferred(mode);
                 crate::shell::fixup_positions(&mut state.space, &mut state.window_manager, state.pointer.current_location());
             }
+
+            WinitEvent::Input(event) => state.process_input_event_windowed(event, OUTPUT_NAME),
+            
             _ => (),
         });
 
